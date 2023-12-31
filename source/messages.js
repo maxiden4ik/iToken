@@ -1,11 +1,11 @@
 import { fmt, bold, code, link } from 'telegraf/format';
 
-export function main_message(token, transaction) { return fmt`
+export function main_message(token) { return fmt`
 💡 ${bold`Contract deployed`}
 
 ${bold`${token.name} (${token.symbol})`}
 • Address: ${code`${token.address}`}
-• Creator: ${code`${transaction.from}`}
+• Creator: ${code`${token.creator}`}
 
 Total Supply: ${bold`${Math.round(token.totalSupply / 10**token.decimals).toLocaleString('de')}`} (+ ${token.decimals} dec)
 `}
