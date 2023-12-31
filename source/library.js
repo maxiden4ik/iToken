@@ -51,29 +51,30 @@ export async function checkSourceCodeVerified(token) {
 
 // 2. Получение холдеров токена.
 export async function getHolders(address, decimals) {
-    const holders = []
+    const holders = [] // Объявление общего массива с холдерами.
 
-    async function getPageHolders(page) {
+    async function getPageHolders(page) { // Функция получние холдеров с указанной страницей.
         return (await axios.get(`https://api.etherscan.io/api?module=token&action=tokenholderlist&contractaddress=${address}&page=${page}&offset=1000&apikey=I42WBTQDF5JSSWARWCNYFU2DUI1IFGQWD1`)).data.result
     }
 
-    const firstPageHolders = await getPageHolders(1)
-    firstPageHolders.forEach(holder => holders.push([holder.TokenHolderAddress, holder.TokenHolderQuantity / 10**decimals]))
+    const firstPageHolders = await getPageHolders(1) // Получение холдеров с первой страницы.
+    firstPageHolders.forEach(holder => holders.push([holder.TokenHolderAddress, holder.TokenHolderQuantity / 10**decimals])) // Фильтрация холдеров и добавление их в общий массив.
 
-    if (firstPageHolders.length === 1000) {
-        await getLocalPageHolders(2)
+    if (firstPageHolders.length === 1000) { // Смотреть следующую страницу, если текущая заполнена полностью.
+        await getLocalPageHolders(2) // Получение холдеров со второй страницы.
 
         async function getLocalPageHolders(page) {
-            const localPageArray = await getPageHolders(page)
+            const localPageArray = await getPageHolders(page) // Получение холдеров с page страницы.
             localPageArray.forEach(holder => holders.push([holder.TokenHolderAddress, holder.TokenHolderQuantity / 10**decimals]))
-            if (localPageArray.length == 1000) {
-                return getLocalPageHolders(page+1)
+
+            if (localPageArray.length == 1000) { // Смотреть следующую страницу, если текущая заполнена полностью.
+                return getLocalPageHolders(page+1) // Рекурсивный вызов функции для сбора холдеров со следующей страницы.
             } else {
-                return holders
+                return holders // Возврат массива все холдеров, если страница не заполенена полностью (то есть следующие страницы смотреть не надо).
             }
         }
     }
 
-    holders.sort((a, b) => b[1] - a[1]);
-    return holders
+    holders.sort((a, b) => b[1] - a[1]); // Сортировка объекта с холдерами по убыванию количества токенов.
+    return holders // Конечный возврат массива с холдерами.
 }
